@@ -1,4 +1,4 @@
-
+#(©)CodeXBotz
 import os
 import asyncio
 from pyrogram import Client, filters, __version__
@@ -6,14 +6,14 @@ from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, 
 from pyrogram.errors import FloodWait, UserIsBlocked, InputUserDeactivated
 
 from bot import Bot
-from config import ADMINS, FORCE_MSG, START_MSG, OWNER_ID, CUSTOM_CAPTION, DISABLE_CHANNEL_BUTTON
+from config import ADMINS, FORCE_MSG, START_MSG, OWNER_ID, CUSTOM_CAPTION, DISABLE_CHANNEL_BUTTON, PROTECT_CONTENT
 from helper_func import subscribed, encode, decode, get_messages
 from database.sql import add_user, query_msg, full_userbase
 
 
 #=====================================================================================##
 
-WAIT_MSG = """"<b>Processing...</b>"""
+WAIT_MSG = """"<b>Processing ...</b>"""
 
 REPLY_ERROR = """<code>Use this command as a replay to any telegram message with out any spaces.</code>"""
 
@@ -57,11 +57,9 @@ async def start_command(client: Client, message: Message):
                 ids = [int(int(argument[1]) / abs(client.db_channel.id))]
             except:
                 return
-        temp_msg = await message.reply("<b>Please Wait...</b>")
+        temp_msg = await message.reply("Please wait...")
         try:
-        final_msg = await get_messages(client, ids)
-        await asyncio.sleep(10)
-        await final_msg.delete()
+            messages = await get_messages(client, ids)
         except:
             await message.reply_text("Something went wrong..!")
             return
@@ -80,11 +78,11 @@ async def start_command(client: Client, message: Message):
                 reply_markup = None
 
             try:
-                await msg.copy(chat_id=message.from_user.id, caption = caption, parse_mode = 'html', reply_markup = reply_markup)
+                await msg.copy(chat_id=message.from_user.id, caption = caption, parse_mode = 'html', reply_markup = reply_markup, protect_content=PROTECT_CONTENT)
                 await asyncio.sleep(0.5)
             except FloodWait as e:
                 await asyncio.sleep(e.x)
-                await msg.copy(chat_id=message.from_user.id, caption = caption, parse_mode = 'html', reply_markup = reply_markup)
+                await msg.copy(chat_id=message.from_user.id, caption = caption, parse_mode = 'html', reply_markup = reply_markup, protect_content=PROTECT_CONTENT)
             except:
                 pass
         return
@@ -92,8 +90,8 @@ async def start_command(client: Client, message: Message):
         reply_markup = InlineKeyboardMarkup(
             [
                 [
-                    InlineKeyboardButton("How To Use❓", callback_data = "about"),
-                    InlineKeyboardButton("Close🔒", callback_data = "close")
+                    InlineKeyboardButton("😊 About Me", callback_data = "about"),
+                    InlineKeyboardButton("🔒 Close", callback_data = "close")
                 ]
             ]
         )
@@ -125,7 +123,7 @@ async def not_joined(client: Client, message: Message):
             [
                 InlineKeyboardButton(
                     text = 'Try Again',
-                    url = f"https://telegram.me/{client.username}?start={message.command[1]}"
+                    url = f"https://t.me/{client.username}?start={message.command[1]}"
                 )
             ]
         )
